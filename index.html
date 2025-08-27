@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emergency Service Directory</title>
+  <style>
+    :root{
+      --bg:#f1f8f4;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --brand:#0ea5a3;
+      --accent:#22c55e;
+      --danger:#ef4444;
+      --shadow:0 10px 18px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--text);}
+    body{background:var(--bg);}
+
+    .navbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;}
+    .nav-left{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand{font-size:18px}
+    .nav-right{display:flex;align-items:center;gap:14px;font-weight:600}
+    .pill{display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:6px 10px;}
+    .pill .val{min-width:24px;text-align:right}
+
+    .hero{background:linear-gradient(180deg,#0ea5a3,#16a34a);padding:38px 18px 28px;text-align:center;color:#fff}
+    .hero .crest{width:84px;height:84px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+    .hero .crest img{width:74px;height:74px;object-fit:contain}
+    .hero h1{margin:0 0 6px;font-size:28px}
+    .hero p{margin:6px 0 0;}
+
+    .container{max-width:1200px;margin:0 auto;padding:18px;}
+    .grid{display:grid;grid-template-columns:3fr 1.2fr;gap:18px;}
+    .cards{display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;}
+
+    .card{position:relative;background:var(--card);border:1px solid #eef2f7;border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;}
+    .badge{font-size:12px;background:#ecfeff;color:#0ea5a3;border:1px solid #c9f2f3;padding:4px 8px;border-radius:999px}
+    .fav{position:absolute;top:10px;right:10px;cursor:pointer;border:none;background:#fff;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;box-shadow:0 0 0 1px #e5e7eb inset;color:#aaa;font-size:16px;}
+    .fav.active{color:#ef4444;}
+    .title{font-weight:700;font-size:16px}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:-8px}
+    .number{font-weight:800;font-size:22px;letter-spacing:.5px}
+    .actions{display:flex;gap:10px;margin-top:auto}
+    .btn{flex:1;border:none;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 0 1px #e5e7eb inset;background:#fff}
+    .btn.primary{background:var(--accent);color:#fff;box-shadow:none}
+    .btn:active{transform:translateY(1px)}
+
+    .history{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:var(--shadow);padding:14px;height:max-content}
+    .history-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .history-title{display:flex;align-items:center;gap:8px;font-weight:800}
+    .history-list{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding-right:4px}
+    .history-item{display:flex;align-items:center;justify-content:space-between;border:1px solid #eef2f7;border-radius:10px;padding:10px}
+    .empty{color:var(--muted);text-align:center;border:1px dashed #e5e7eb;border-radius:10px;padding:20px}
+    .clear{border:none;background:#fff;padding:8px 10px;border-radius:10px;box-shadow:0 0 0 1px #e5e7eb inset;cursor:pointer}
+    .clear:hover{box-shadow:0 0 0 2px #e5e7eb inset}
+
+    @media (max-width:1024px){.grid{grid-template-columns:1fr}.history{order:2}.cards{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:640px){.navbar{flex-wrap:wrap;gap:10px}.cards{grid-template-columns:1fr}.hero h1{font-size:22px}}
+  </style>
+</head>
+<body>
+  <nav class="navbar" aria-label="Main Navigation">
+    <div class="nav-left">
+      <img src="logo.png" alt="Emergency Service Logo" style="width:40px;height:40px;object-fit:contain;border-radius:8px" />
+      <div class="brand">Emergency Service</div>
+    </div>
+    <div class="nav-right">
+      <div class="pill" title="Total Favorites">💗 <span class="val" id="heartCount">0</span></div>
+      <div class="pill" title="Coins Left">🪙 <span class="val" id="coinCount">100</span></div>
+      <div class="pill" title="Total Copies">📋 <span class="val" id="copyCount">0</span></div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="crest"><img src="logo.png" alt="Government Logo"></div>
+    <h1>Emergency Service Directory</h1>
+    <p>Government Emergency Services at your Fingertips</p>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="cards" id="cardGrid" aria-label="Emergency Hotline Cards"></section>
+      <aside class="history" aria-label="Call History">
+        <div class="history-head">
+          <div class="history-title">📞 Call History</div>
+          <button class="clear" id="clearHistory">Clear</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="empty" id="historyEmpty">No calls yet. Your calls will appear here.</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const services = [
+      { id:1, img:'emergency.png', name:'National Emergency Number', bn:'জাতীয় জরুরি সেবা', number:'999', category:'All' },
+      { id:2, img:'police.png', name:'Police Helpline Number', bn:'পুলিশ হেল্পলাইন', number:'999', category:'Police' },
+      { id:3, img:'fire-service.png', name:'Fire Service Number', bn:'ফায়ার সার্ভিস', number:'999', category:'Fire' },
+      { id:4, img:'ambulance.png', name:'Ambulance Service', bn:'অ্যাম্বুলেন্স সেবা', number:'1994-999999', category:'Health' },
+      { id:5, img:'emergency.png', name:'Women & Child Helpline', bn:'নারী ও শিশুর হেল্পলাইন', number:'109', category:'Help' },
+      { id:6, img:'emergency.png', name:'Anti-Corruption Helpline', bn:'দুর্নীতি দমন হটলাইন', number:'106', category:'Govt.' },
+      { id:7, img:'emergency.png', name:'Electricity Helpline', bn:'বিদ্যুৎ সমস্যা', number:'16216', category:'Electricity' },
+      { id:8, img:'emergency.png', name:'Brac Helpline', bn:'ব্র্যাক হেল্পলাইন', number:'16445', category:'NGO' },
+      { id:9, img:'emergency.png', name:'Bangladesh Railway Helpline', bn:'রেলওয়ে হেল্পলাইন', number:'163', category:'Travel' },
+    ];
+
+    let heartCount = 0, coinCount = 100, copyCount = 0;
+
+    const $ = (q)=>document.querySelector(q);
+    const el = (tag, cls, txt)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.textContent=txt; return e; };
+    const updateNav = ()=>{ $('#heartCount').textContent=heartCount; $('#coinCount').textContent=coinCount; $('#copyCount').textContent=copyCount; };
+
+    // Clipboard with fallback + alert + counter
+    function copyText(text){
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(()=>{ copyCount++; updateNav(); alert('Number copied: ' + text); })
+        .catch(()=> fallbackCopy(text));
+      } else { fallbackCopy(text); }
+    }
+    function fallbackCopy(text){
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch(_) {}
+      document.body.removeChild(ta);
+      copyCount++; updateNav(); alert('Number copied: ' + text);
+    }
+
+    // Render cards
+    const grid = $('#cardGrid');
+    services.forEach(s=>{
+      const card = el('article','card');
+
+      const left = el('div');
+      const logoImg = el('img'); logoImg.src=s.img; logoImg.alt=s.name+' Logo';
+      logoImg.style.width='32px'; logoImg.style.height='32px'; logoImg.style.objectFit='contain';
+      left.appendChild(logoImg);
+      left.appendChild(el('span','badge',s.category));
+
+      const fav = el('button','fav'); fav.innerHTML='🤍'; fav.setAttribute('aria-label','Add to favorites');
+      fav.addEventListener('click',()=>{
+        fav.classList.toggle('active'); fav.innerHTML = fav.classList.contains('active') ? '❤️' : '🤍';
+        heartCount += fav.classList.contains('active') ? 1 : -1; updateNav();
+      });
+      card.append(fav);
+
+      const head = el('div'); head.append(left);
+
+      const title = el('div','title',s.name);
+      const subtitle = el('div','subtitle',s.bn);
+      const number = el('div','number',s.number);
+
+      const actions = el('div','actions');
+      const copyBtn = el('button','btn'); copyBtn.innerHTML='📋 Copy'; copyBtn.addEventListener('click',()=>copyText(s.number));
+      const callBtn = el('button','btn primary'); callBtn.innerHTML='📞 Call'; callBtn.addEventListener('click',()=>doCall(s));
+      actions.append(copyBtn, callBtn);
+
+      card.append(head, title, subtitle, number, actions);
+      grid.appendChild(card);
+    });
+
+    // History
+    const historyList = $('#historyList'), historyEmpty = $('#historyEmpty');
+    $('#clearHistory').addEventListener('click', ()=>{ historyList.innerHTML=''; historyList.appendChild(historyEmpty); historyEmpty.style.display='block'; });
+
+    function addHistory(item){
+      historyEmpty.style.display='none';
+      const row = el('div','history-item');
+      const left = el('div'); left.innerHTML = `<strong>${item.name}</strong><br><span style="color:var(--muted);font-size:12px">${item.number}</span>`;
+      const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+      const right = el('div'); right.style.color='var(--muted)'; right.style.fontSize='12px'; right.textContent=time;
+      row.append(left,right); historyList.prepend(row);
+    }
+
+    function doCall(service){
+      if (coinCount < 20) { alert('Not enough coins (need 20). Please top up or try later.'); return; }
+      alert(`${service.name} — Calling ${service.number}`);
+      coinCount -= 20; updateNav(); addHistory(service);
+    }
+
+    updateNav();
+  </script>
+</body>
+</html>
